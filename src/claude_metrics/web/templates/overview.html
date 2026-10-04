@@ -1,0 +1,38 @@
+{% extends 'base.html' %}{% from 'macros.html' import metrics, cost, pagination, breakdown %}
+{% block title %}Overview{% endblock %}
+{% block subtitle %}Inspect totals, activity, and attribution for the selected ledger slice.{% endblock %}
+{% block content %}
+{{ metrics(data.total) }}
+{% if not data.total.requests %}
+<section class="panel empty"><span class="empty-symbol" aria-hidden="true">↗</span><h2>No matching usage yet</h2><p>Refresh your configured sources, or clear the filters to see retained history. An empty report is not proof of zero activity.</p><a class="button" href="{{ link('/data-health') }}">Check source directories →</a></section>
+{% else %}
+<div class="overview-grid">
+<section class="panel activity-panel">
+  <div class="panel-heading"><div><h2>Daily activity</h2><p>Known tokens and API-equivalent cost</p></div><span class="badge">{{ q.tz }}</span></div>
+  <div class="table-wrap"><table class="activity-table">
+    <caption>Token bars are relative to this page’s maximum. Days without retained calls are omitted.</caption>
+    <thead><tr><th scope="col">Local day</th><th scope="col">Token activity</th><th scope="col">Cost</th></tr></thead>
+    <tbody>{% for bar in bars(data.daily, 'known_tokens') %}{% set row = bar.row %}
+      <tr><td class="date-cell">{{ row.key }}<small>{{ row.requests|number }} calls</small></td>
+        <td class="activity-cell"><strong>{{ row.known_tokens|number }}</strong>{% if row.all_tokens is none %}<small>Known portion</small>{% endif %}
+          <svg class="activity-bar" viewBox="0 0 110 6" preserveAspectRatio="none" aria-hidden="true"><rect class="bar-track" width="110" height="6" rx="3"/><rect class="bar-fill" width="{{ bar.height }}" height="6" rx="3"/></svg>
+        </td><td>{{ cost(row) }}</td></tr>
+    {% else %}<tr><td colspan="3">No dates on this page. Return to the first page to see activity.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+<div class="stack">
+  <section class="panel"><div class="panel-heading"><div><h2>Token breakdown</h2><p>Exclusive buckets · no double counting</p></div></div>
+    <dl class="token-list">{% for key, label in token_labels.items() %}<div><dt><span class="token-dot token-{{ loop.index }}" aria-hidden="true"></span>{{ label }}</dt><dd>{{ data.total.tokens[key]|number }}{% if data.total.unknown_counters.get(key) %}<small>+ unknown in {{ data.total.unknown_counters[key] }} requests</small>{% endif %}</dd></div>{% endfor %}</dl>
+    <p class="panel-note">Reasoning is already included in output when reported. Server-tool charges are not tokens.</p>
+  </section>
+  <section class="panel"><div class="panel-heading"><div><h2>Request attribution</h2><p>Main sessions and other recorded sources</p></div></div>
+    {% for row in data.sources %}<div class="attribution"><div><strong>{{ row.key|capitalize }}</strong><small>{{ row.requests|number }} calls · {{ row.known_tokens|number }} known tokens</small></div><div>{{ cost(row) }}</div></div>{% else %}<p class="empty">No attribution rows on this page.</p>{% endfor %}
+  </section>
+</div>
+</div>
+<div class="section-heading"><div><h2>Usage dimensions</h2><p>Select a model or project to narrow the report.</p></div></div>
+<div class="two-col">{{ breakdown(data.models, 'model', link, 'model') }}{{ breakdown(data.projects, 'project', link, 'project') }}</div>
+<p class="filter-note">Grouped lists are paged independently at the same offset; totals above always cover the full selection.</p>
+{{ pagination(data, q, '/', link, true) }}
+{% endif %}
+{% endblock %}

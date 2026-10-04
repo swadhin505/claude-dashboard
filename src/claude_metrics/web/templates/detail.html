@@ -1,0 +1,64 @@
+{% extends 'base.html' %}{% from 'macros.html' import metrics, pagination %}
+{% block title %}Session detail{% endblock %}
+{% block subtitle %}Audit request-level usage and pricing without conversation content.{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{{ link('/sessions') }}">← All sessions</a> · Ledger session #{{ data.session_pk }}</p>
+{{ metrics(data.total) }}
+<section class="panel">
+  <div class="panel-heading"><div><h2>Turn / request timeline</h2><p>Stable ledger order · timestamps in {{ q.tz }}</p></div></div>
+  {% for row in data.requests %}
+  <article class="request-card">
+    <div class="request-heading">
+      <div>
+        <span class="eyebrow">TURN {{ row.turn_pk or 'UNKNOWN' }} / REQUEST {{ row.request_pk }}</span>
+        <h3>{{ row.model_raw }}</h3>
+        <p>{{ row.occurred_at_us|timestamp(q.tz) }} · {{ row.query_source }} · provider: {{ row.provider }}</p>
+      </div>
+      <div>
+        <strong class="cost-value">{% if row.cost.status == 'UNPRICED' %}Unpriced{% else %}{{ row.cost.effective_cost_nanos|money_brief }}{% endif %}</strong>
+        <div class="badges"><span class="badge {{ row.cost.status|lower }}">{{ row.cost.status|lower }}</span>{% if row.cost.estimates %}<span class="badge estimated">estimated</span>{% endif %}</div>
+        <small>Source: {{ row.cost.effective_source or 'unavailable' }}{% if row.cost.status == 'PARTIAL' %} · known portion only{% endif %}</small>
+      </div>
+    </div>
+    <dl class="request-tokens">
+      {% for key, label in token_labels.items() %}<div><dt>{{ label }}</dt><dd>{{ row[key]|number }}</dd></div>{% endfor %}
+    </dl>
+    {% if row.reasoning_tokens is not none %}<p class="panel-note">Reasoning: {{ row.reasoning_tokens|number }} (already included in output).</p>{% endif %}
+    {% if row.cost.missing or row.cost.warnings or row.cost.estimates %}
+    <details class="notice">
+      <summary>Pricing notes &amp; assumptions{% if row.cost.missing %} · missing components{% endif %}</summary>
+      <ul>{% for reason in row.cost.missing + row.cost.warnings + row.cost.estimates %}<li>{{ reason }}</li>{% endfor %}</ul>
+    </details>
+    {% endif %}
+    <p class="coverage">Calculated rate coverage: {{ row.cost.coverage.priced_tokens|number }} priced tokens · {{ row.cost.coverage.unpriced_tokens|number }} unpriced tokens{% if row.cost.coverage.unknown_counters %} · unknown counters: {{ row.cost.coverage.unknown_counters|join(', ') }}{% endif %}{% if row.cost.coverage.unpriced_units %} · missing unit rates: {{ row.cost.coverage.unpriced_units }}{% endif %}</p>
+    <details>
+      <summary>Calculation receipt &amp; source evidence</summary>
+      <p class="exact-amount">Exact effective value: {{ row.cost.effective_cost_nanos|money }}{% if row.cost.status == 'PARTIAL' %} · known portion only{% endif %}</p>
+      {% if row.receipt %}
+      <dl class="audit">
+        <div><dt>Price key / resolution</dt><dd>{{ row.cost.price_key or 'Unresolved' }} · {{ row.cost.resolution_method }}</dd></div>
+        <div><dt>Calculated / reported</dt><dd>{{ row.cost.calculated_cost_nanos|money }} / {{ row.cost.reported_cost_nanos|money }}</dd></div>
+        <div><dt>Formula / catalog</dt><dd>{{ row.receipt.formula_version }} / {{ row.receipt.catalog_version }}</dd></div>
+        <div><dt>Revision / identity</dt><dd>{{ row.revision }} / {{ row.identity_confidence }} · {{ row.request_id or 'No request ID' }} · {{ row.message_id or 'No message ID' }}</dd></div>
+      </dl>
+      <h4 class="subsection-heading">Frozen rates, rules, policy and exact calculation</h4>
+      <pre>{{ row.receipt|tojson(indent=2) }}</pre>
+      {% else %}<p>Pricing pending. No stale receipt amount is included.</p>{% endif %}
+      <h4 class="subsection-heading">Source pointers</h4>
+      <ul class="evidence">
+        {% for source in row.source_evidence %}<li><code>{{ source.canonical_path }}</code> · line {{ source.source_line }} · byte {{ source.byte_offset }} · generation {{ source.generation }} · {{ source.parser_version }} · {% if source.is_current_winner %}winning observation{% else %}retained observation{% endif %}{% if not source.source_available %} · source no longer available{% endif %}{% if source.superseded %} · superseded parse{% endif %}</li>{% endfor %}
+      </ul>
+    </details>
+  </article>
+  {% else %}<p class="empty">No matching requests on this page.</p>{% endfor %}
+</section>
+{{ pagination(data, q, '/sessions/' ~ data.session_pk, link) }}
+<section class="panel">
+  <div class="panel-heading"><div><h2>Tool activity</h2><p>Selected requests · no arguments or outputs</p></div></div>
+  {% if data.tool_summary %}
+  <div class="table-wrap"><table><thead><tr><th scope="col">Tool</th><th scope="col">Calls</th><th scope="col">Succeeded</th><th scope="col">Failed</th><th scope="col">Unknown result</th></tr></thead><tbody>
+    {% for tool in data.tool_summary %}<tr><td>{{ tool.tool_name }}</td><td>{{ tool.calls }}</td><td>{{ tool.succeeded }}</td><td>{{ tool.failed }}</td><td>{{ tool.unknown_success }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<p class="empty">No linked tool calls in this selection. This does not prove no tools were used.</p>{% endif %}
+</section>
+{% endblock %}

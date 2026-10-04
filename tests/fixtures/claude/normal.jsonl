@@ -1,0 +1,2 @@
+{"type":"user","sessionId":"session-main","uuid":"prompt-fixture","timestamp":"2026-09-30T18:29:58.000Z","message":{"role":"user","content":[]}}
+{"type":"assistant","sessionId":"session-main","requestId":"req-a","timestamp":"2026-09-30T18:29:59.000Z","cwd":"C:/fixture/project","message":{"id":"msg-a","model":"claude-sonnet-4-6","role":"assistant","content":[],"usage":{"input_tokens":100,"cache_read_input_tokens":200,"cache_creation_input_tokens":100,"cache_creation":{"ephemeral_5m_input_tokens":40,"ephemeral_1h_input_tokens":60},"output_tokens":50}}}

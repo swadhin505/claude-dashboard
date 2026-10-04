@@ -1,0 +1,67 @@
+{% extends 'base.html' %}{% from 'macros.html' import cost, pagination %}
+{% block title %}Data health{% endblock %}
+{% block subtitle %}Verify sources, pricing coverage, and retained provenance.{% endblock %}
+{% block content %}
+<p class="notice neutral">Health covers the entire retained ledger, regardless of report filters. Estimates are not billing evidence; “complete” only describes captured usage coverage.</p>
+{% if data.warnings.get('unknown_or_unsupported_provider') %}
+<section class="panel">
+  <div class="panel-heading"><div><h2>Why is my model unpriced?</h2><p>Retained strict policy or unsupported routing</p></div></div>
+  <p>Auto mode estimates unknown routing using Anthropic model rates and unknown cache-write duration using the 5-minute rate. Existing strict receipts are preserved until explicitly repriced:</p>
+  <pre>claude-metrics pricing apply --data-dir &lt;your-data-directory&gt; --cost-mode auto --reprice</pre>
+  <p class="panel-note">Old receipts and original evidence are retained. Estimates are not a subscription invoice. New dashboard runs use auto mode by default; <code>--cost-mode strict</code> disables these assumptions for new requests. Known other providers and genuinely missing rates remain unpriced.</p>
+</section>
+{% endif %}
+<div class="two-col">
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Sources &amp; ingestion</h2><p>Read-only Claude source directories</p></div></div>
+    <dl class="audit">
+      <div><dt>Last completed scan</dt><dd>{{ (data.last_complete_scan.completed_at_us if data.last_complete_scan else none)|timestamp(q.tz) }}</dd></div>
+      <div><dt>Last failed scan</dt><dd>{{ (data.last_failed_scan.completed_at_us if data.last_failed_scan else none)|timestamp(q.tz) }}</dd></div>
+      <div><dt>Low-confidence request identities</dt><dd>{{ data.low_confidence_requests|number }}</dd></div>
+      <div><dt>Historical diagnostics</dt><dd>{{ data.historical_diagnostics_count|number }}</dd></div>
+    </dl>
+    {% if data.last_complete_scan %}<details><summary>Last completed scan counters</summary><pre>{{ data.last_complete_scan|tojson(indent=2) }}</pre></details>{% endif %}
+    {% if data.last_refresh %}<details><summary>Latest dashboard refresh result</summary><pre>{{ data.last_refresh|tojson(indent=2) }}</pre></details>{% endif %}
+    <h3 class="subsection-heading">Configured sources</h3>
+    <ul class="evidence">{% for root in data.roots %}<li><span class="badge {{ 'complete' if root.status == 'available' else 'partial' }}">{{ root.status }}</span> <code>{{ root.path }}</code></li>{% endfor %}</ul>
+    <p class="panel-note">An available directory may be empty. A completed scan may contain diagnostics; it does not guarantee complete capture.</p>
+  </section>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Pricing &amp; provenance</h2><p>Offline, pinned catalog</p></div></div>
+    <dl class="audit">
+      <div><dt>Parser / formula</dt><dd>{{ data.parser_version }} / {{ data.formula_version }}</dd></div>
+      <div><dt>Receipts retained</dt><dd>{{ data.receipt_history_count|number }}</dd></div>
+      <div><dt>Current receipt coverage</dt><dd>{% for status, count in data.current_receipts.items() %}<span class="badge {{ status|lower }}">{{ count|number }} {{ status|lower }}</span> {% else %}No current receipts{% endfor %}</dd></div>
+      <div><dt>Policy for new requests</dt><dd>Unknown provider: {{ data.new_request_policy.assume_provider or 'leave unpriced' }}{% if data.new_request_policy.assume_provider %} (explicit estimate){% endif %}<br>Unknown cache TTL: {{ 'assume 5 minutes (estimated)' if data.new_request_policy.assume_cache_5m else 'leave unpriced' }}</dd></div>
+    </dl>
+    <p class="panel-note">Refresh preserves existing receipts and selected revision policies. Change assumptions explicitly through <code>pricing apply --reprice</code>. Ambiguous previous policies stay pending.</p>
+    <details><summary>Active catalog and checksum</summary><pre>{{ data.active_catalog|tojson(indent=2) }}</pre></details>
+    <details><summary>Catalog versions retained in the ledger</summary><pre>{{ data.catalogs|tojson(indent=2) }}</pre></details>
+  </section>
+</div>
+<div class="section-heading"><div><h2>Coverage &amp; diagnostics</h2><p>Check missing information before interpreting the totals.</p></div></div>
+<section class="panel">
+  <div class="panel-heading"><div><h2>Pricing notes</h2><p>Requests affected per estimation or coverage reason</p></div></div>
+  {% if data.warnings %}<dl class="warning-list">{% for code, count in data.warnings.items() %}<div><dt>{{ code }}</dt><dd>{{ count|number }}</dd></div>{% endfor %}</dl>
+  {% else %}<p class="empty">No recorded pricing warnings. An empty ledger does not establish complete capture.</p>{% endif %}
+</section>
+<section class="panel">
+  <div class="panel-heading"><h2>Models with incomplete coverage</h2><span class="badge">{{ data.group_counts.incomplete_models }} total</span></div>
+  {% if data.incomplete_models %}<div class="table-wrap"><table><thead><tr><th scope="col">Model</th><th scope="col">Known tokens</th><th scope="col">API-equivalent cost</th></tr></thead><tbody>
+    {% for row in data.incomplete_models %}<tr><td>{{ row.model }}</td><td>{{ row.known_tokens|number }}</td><td>{{ cost(row) }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<p class="empty">No incomplete models on this page.</p>{% endif %}
+</section>
+<section class="panel">
+  <div class="panel-heading"><div><h2>Source checkpoints</h2><p>Retained file positions · paths may contain private metadata</p></div><span class="badge">{{ data.group_counts.sources }} files</span></div>
+  {% if data.sources %}<div class="table-wrap"><table><thead><tr><th scope="col">File</th><th scope="col">Parser / generation</th><th scope="col">Bytes read / observed</th><th scope="col">Last processed</th></tr></thead><tbody>
+    {% for source in data.sources %}<tr><td><code>{{ source.canonical_path }}</code></td><td>{{ source.parser_version }} · {{ source.generation }}</td><td>{{ source.byte_offset|number }} / {{ source.size|number }}</td><td>{{ source.last_scan_at_us|timestamp(q.tz) }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<p class="empty">No checkpoints on this page.</p>{% endif %}
+</section>
+{{ pagination(data, q, '/data-health', link, true) }}
+<section class="panel">
+  <div class="panel-heading"><div><h2>Recent source diagnostics</h2><p>Latest 20 · historical runs included</p></div></div>
+  {% if data.recent_diagnostics %}<div class="table-wrap"><table><thead><tr><th scope="col">Reason</th><th scope="col">Source / line</th><th scope="col">Run</th></tr></thead><tbody>
+    {% for item in data.recent_diagnostics %}<tr><td>{{ item.code }}</td><td><code>{{ item.source_path }}</code> · {{ item.source_line or '—' }}</td><td><code>{{ item.run_id }}</code></td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<p class="empty">No retained source diagnostics.</p>{% endif %}
+</section>
+{% endblock %}

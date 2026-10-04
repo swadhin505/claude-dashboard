@@ -1,0 +1,41 @@
+{
+  "description": "Illustrative test-only rates, not a production price source. Values manually calculated.",
+  "rates_usd_per_million": {
+    "input": "3",
+    "cache_read": "0.30",
+    "cache_write_5m": "3.75",
+    "cache_write_1h": "6",
+    "output": "15"
+  },
+  "cases": [
+    {
+      "name": "all_token_buckets",
+      "tokens": {
+        "input_uncached_tokens": 100,
+        "cache_read_tokens": 200,
+        "cache_write_5m_tokens": 40,
+        "cache_write_1h_tokens": 60,
+        "cache_write_unknown_tokens": 0,
+        "output_tokens": 50
+      },
+      "expected_cost_nanos": 1620000
+    },
+    {
+      "name": "subagent",
+      "tokens": {
+        "input_uncached_tokens": 10,
+        "cache_read_tokens": 100,
+        "cache_write_5m_tokens": 0,
+        "cache_write_1h_tokens": 0,
+        "cache_write_unknown_tokens": 0,
+        "output_tokens": 5
+      },
+      "expected_cost_nanos": 135000
+    }
+  ],
+  "web_search_example": {
+    "quantity": 2,
+    "usd_per_1000": "10",
+    "expected_cost_nanos": 20000000
+  }
+}

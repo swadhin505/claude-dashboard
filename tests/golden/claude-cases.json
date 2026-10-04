@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "cases": [
+    {
+      "id": "normal",
+      "files": [
+        "normal.jsonl"
+      ],
+      "expected": {
+        "requests": 1,
+        "tokens": {
+          "input_uncached_tokens": 100,
+          "cache_read_tokens": 200,
+          "cache_write_5m_tokens": 40,
+          "cache_write_1h_tokens": 60,
+          "cache_write_unknown_tokens": 0,
+          "output_tokens": 50
+        },
+        "all_tokens": 450
+      },
+      "winner_lines": {
+        "normal.jsonl": [
+          2
+        ]
+      }
+    },
+    {
+      "id": "streaming_revision",
+      "files": [
+        "streaming.jsonl"
+      ],
+      "expected": {
+        "requests": 1,
+        "tokens": {
+          "input_uncached_tokens": 100,
+          "cache_read_tokens": 200,
+          "cache_write_5m_tokens": 40,
+          "cache_write_1h_tokens": 60,
+          "cache_write_unknown_tokens": 0,
+          "output_tokens": 50
+        },
+        "all_tokens": 450
+      },
+      "winner_lines": {
+        "streaming.jsonl": [
+          3
+        ]
+      }
+    },
+    {
+      "id": "missing_request_id_unknown_ttl",
+      "files": [
+        "missing-request-id.jsonl"
+      ],
+      "expected": {
+        "requests": 1,
+        "tokens": {
+          "input_uncached_tokens": 3,
+          "cache_read_tokens": 0,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 0,
+          "cache_write_unknown_tokens": 8,
+          "output_tokens": 4
+        },
+        "all_tokens": 15
+      },
+      "winner_lines": {
+        "missing-request-id.jsonl": [
+          2
+        ]
+      }
+    },
+    {
+      "id": "mixed_models",
+      "files": [
+        "mixed-models.jsonl"
+      ],
+      "expected": {
+        "requests": 2,
+        "tokens": {
+          "input_uncached_tokens": 120,
+          "cache_read_tokens": 200,
+          "cache_write_5m_tokens": 40,
+          "cache_write_1h_tokens": 60,
+          "cache_write_unknown_tokens": 0,
+          "output_tokens": 60
+        },
+        "all_tokens": 480
+      },
+      "winner_lines": {
+        "mixed-models.jsonl": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "subagent_overlap",
+      "files": [
+        "parent.jsonl",
+        "subagents/agent-fixture.jsonl"
+      ],
+      "expected": {
+        "requests": 2,
+        "tokens": {
+          "input_uncached_tokens": 110,
+          "cache_read_tokens": 300,
+          "cache_write_5m_tokens": 40,
+          "cache_write_1h_tokens": 60,
+          "cache_write_unknown_tokens": 0,
+          "output_tokens": 55
+        },
+        "all_tokens": 565,
+        "main_tokens": 450,
+        "subagent_tokens": 115
+      },
+      "winner_lines": {
+        "parent.jsonl": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "confirmed_resume",
+      "files": [
+        "normal.jsonl",
+        "resumed.jsonl"
+      ],
+      "context": {
+        "lineage": [
+          {
+            "session": "session-resumed",
+            "parent": "session-main",
+            "evidence": "record-specific forkedFrom.sessionId + messageUuid; observed in anthropics/claude-code issue 40363"
+          }
+        ]
+      },
+      "expected": {
+        "requests": 1,
+        "tokens": {
+          "input_uncached_tokens": 100,
+          "cache_read_tokens": 200,
+          "cache_write_5m_tokens": 40,
+          "cache_write_1h_tokens": 60,
+          "cache_write_unknown_tokens": 0,
+          "output_tokens": 50
+        },
+        "all_tokens": 450
+      },
+      "winner_lines": {
+        "normal.jsonl": [
+          2
+        ]
+      }
+    },
+    {
+      "id": "unrelated_reused_ids",
+      "files": [
+        "normal.jsonl",
+        "unrelated.jsonl"
+      ],
+      "expected": {
+        "requests": 2,
+        "tokens": {
+          "input_uncached_tokens": 107,
+          "cache_read_tokens": 200,
+          "cache_write_5m_tokens": 40,
+          "cache_write_1h_tokens": 60,
+          "cache_write_unknown_tokens": 0,
+          "output_tokens": 53
+        },
+        "all_tokens": 460
+      },
+      "winner_lines": {
+        "normal.jsonl": [
+          2
+        ],
+        "unrelated.jsonl": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "provider_and_modes",
+      "files": [
+        "modifiers.jsonl"
+      ],
+      "context": {
+        "provider_by_message": {
+          "msg-standard": "anthropic",
+          "msg-fast": "anthropic",
+          "msg-geo": "anthropic",
+          "msg-provider": "unknown",
+          "msg-unknown": "anthropic"
+        }
+      },
+      "expected": {
+        "requests": 5,
+        "tokens": {
+          "input_uncached_tokens": 50,
+          "cache_read_tokens": 0,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 0,
+          "cache_write_unknown_tokens": 0,
+          "output_tokens": 10
+        },
+        "all_tokens": 60,
+        "unpriced_messages": [
+          "msg-provider",
+          "msg-unknown"
+        ]
+      },
+      "winner_lines": {
+        "modifiers.jsonl": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      }
+    },
+    {
+      "id": "server_units",
+      "files": [
+        "server-tools.jsonl"
+      ],
+      "expected": {
+        "requests": 2,
+        "tokens": {
+          "input_uncached_tokens": 20,
+          "cache_read_tokens": 0,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 0,
+          "cache_write_unknown_tokens": 0,
+          "output_tokens": 4
+        },
+        "all_tokens": 24,
+        "billable_units": {
+          "web_search_requests": 2,
+          "fixture_unknown_units": 1
+        },
+        "partial_messages": [
+          "msg-unknown-unit"
+        ]
+      },
+      "winner_lines": {
+        "server-tools.jsonl": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "local_midnight",
+      "files": [
+        "midnight.jsonl"
+      ],
+      "expected": {
+        "requests": 2,
+        "tokens": {
+          "input_uncached_tokens": 3,
+          "cache_read_tokens": 0,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 0,
+          "cache_write_unknown_tokens": 0,
+          "output_tokens": 3
+        },
+        "all_tokens": 6,
+        "timezone": "Asia/Kolkata",
+        "daily_tokens": {
+          "2026-09-30": 2,
+          "2026-10-01": 4
+        }
+      },
+      "winner_lines": {
+        "midnight.jsonl": [
+          1,
+          2
+        ]
+      }
+    }
+  ]
+}

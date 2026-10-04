@@ -1,0 +1,31 @@
+{
+  "description": "Synthetic byte transitions. Each operation targets one temporary file. No real transcripts.",
+  "initial": "{\"type\":\"assistant\",\"sessionId\":\"session-main\",\"requestId\":\"req-a\",\"timestamp\":\"2026-09-30T18:29:59.000Z\",\"cwd\":\"C:/fixture/project\",\"message\":{\"id\":\"msg-a\",\"model\":\"claude-sonnet-4-6\",\"role\":\"assistant\",\"content\":[],\"usage\":{\"input_tokens\":100,\"cache_read_input_tokens\":200,\"cache_creation_input_tokens\":100,\"cache_creation\":{\"ephemeral_5m_input_tokens\":40,\"ephemeral_1h_input_tokens\":60},\"output_tokens\":50}}}\n",
+  "steps": [
+    {
+      "operation": "append",
+      "text": "{\"type\":\"assistant\",\"sessionId\":\"session-main\",\"requestId\":\"req-b\",\"timestamp\":\"2026-09-30T18:29:59.000Z\",\"cwd\":\"C:/fixture/project\",\"message\":{\"id\":\"msg-b\",\"model\":\"claude-haiku-4-5\",\"role\":\"assistant\",\"content\":[],\"usage\":{\"input_tokens\":20,\"cache_read_input_tokens\":0,\"cache_creation_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":10}}}\n",
+      "expected_unique_requests": 2
+    },
+    {
+      "operation": "append",
+      "text": "{\"type\":\"assistant\",\"sessionId\":\"session-main\",\"requestId\":\"req-sub\",\"",
+      "expected_unique_requests": 2
+    },
+    {
+      "operation": "append",
+      "text": "timestamp\":\"2026-09-30T18:29:59.000Z\",\"cwd\":\"C:/fixture/project\",\"message\":{\"id\":\"msg-sub\",\"model\":\"claude-sonnet-4-6\",\"role\":\"assistant\",\"content\":[],\"usage\":{\"input_tokens\":10,\"cache_read_input_tokens\":100,\"cache_creation_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":5}},\"isSidechain\":true,\"agentId\":\"agent-fixture\"}\n",
+      "expected_unique_requests": 3
+    },
+    {
+      "operation": "truncate",
+      "text": "",
+      "expected_durable_requests": 3
+    },
+    {
+      "operation": "replace",
+      "text": "{\"type\":\"assistant\",\"sessionId\":\"session-main\",\"requestId\":\"req-a\",\"timestamp\":\"2026-09-30T18:29:59.000Z\",\"cwd\":\"C:/fixture/project\",\"message\":{\"id\":\"msg-a\",\"model\":\"claude-sonnet-4-6\",\"role\":\"assistant\",\"content\":[],\"usage\":{\"input_tokens\":100,\"cache_read_input_tokens\":200,\"cache_creation_input_tokens\":100,\"cache_creation\":{\"ephemeral_5m_input_tokens\":40,\"ephemeral_1h_input_tokens\":60},\"output_tokens\":50}}}\n",
+      "expected_durable_requests": 3
+    }
+  ]
+}

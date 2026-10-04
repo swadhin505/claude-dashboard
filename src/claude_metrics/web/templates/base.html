@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="scan-token" content="{{ scan_token }}">
+  <title>{% block title %}Overview{% endblock %} · Claude Dashboard</title>
+  <link rel="stylesheet" href="/static/tokens.css">
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <script src="/static/dashboard.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <aside class="sidebar" aria-label="Workspace">
+    <a class="brand" href="{{ link('/') }}"><span class="brand-mark" aria-hidden="true">c/</span><span>Claude Dashboard<small>Local usage ledger</small></span></a>
+    <nav class="tabs" aria-label="Primary">
+      <a href="{{ link('/') }}" {% if page == 'overview' %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Overview</a>
+      <a href="{{ link('/sessions') }}" {% if page in ['sessions','detail'] %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h10M7 17h5"/></svg>Sessions</a>
+      <a href="{{ link('/data-health') }}" {% if page == 'health' %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7Z"/><path d="m8 12 3 3 5-6"/></svg>Data health</a>
+    </nav>
+    <div class="sidebar-note"><span class="local"><span aria-hidden="true">●</span> Runs on your machine</span><p>Claude Code history.<br>No conversation content stored.</p></div>
+  </aside>
+  <div class="workspace">
+    <header class="workspace-bar"><span>Usage ledger <span aria-hidden="true">/</span> {{ self.title() }}</span><span class="workspace-scope">Claude Code <span class="badge complete">Local only</span></span></header>
+    <div class="shell">
+      <main id="main">
+        <div class="heading"><div><h1>{{ self.title() }}</h1><p class="subtitle">{% block subtitle %}Inspect retained Claude usage and its evidence.{% endblock %}</p></div>
+          <div class="scan-control"><button id="scan-button" class="primary" type="button">↻ Refresh data</button><small>On-demand scan · offline pricing</small></div>
+        </div>
+        <p id="scan-status" role="status" aria-live="polite" hidden></p>
+        <noscript><p class="notice">Viewing and filters work without JavaScript. To refresh, run the scan and pricing CLI commands.</p></noscript>
+        <div class="trustline"><span>USD · API-equivalent value, not a subscription bill.</span><span>{% if health.last_complete_scan %}Last scan: {{ health.last_complete_scan.completed_at_us|timestamp(q.tz) }}{% else %}No completed scan yet.{% endif %}</span></div>
+        {% set unavailable = health.roots|rejectattr('status', 'equalto', 'available')|list %}
+        {% if stale or health.warnings.get('unknown_or_unsupported_provider') or health.last_failed_scan or (health.last_refresh and not health.last_refresh.ok) or health.historical_diagnostics_count or unavailable %}
+        <details class="notice data-notices" {% if page == 'health' or unavailable or (health.last_refresh and not health.last_refresh.ok) %}open{% endif %}><summary>Data notices <span>{% if health.last_refresh and not health.last_refresh.ok %}Refresh needs attention{% elif unavailable %}Source unavailable{% elif stale %}Refresh recommended{% else %}Retained diagnostics{% endif %} · view details</span></summary>
+          {% if stale %}<p>{% if health.last_complete_scan %}Snapshot may be stale: last completed scan was over 24 hours ago.{% else %}No scan history. Refresh to read your configured Claude source directories.{% endif %} There is no background watcher.</p>{% endif %}
+          {% if health.warnings.get('unknown_or_unsupported_provider') %}<p>Some requests retain strict pricing or have unsupported provider evidence. Auto mode estimates unknown routing using Anthropic rates, but does not override known other providers or existing receipts. These requests are not free.</p>{% endif %}
+          {% if health.last_failed_scan or (health.last_refresh and not health.last_refresh.ok) %}<p>A scan or pricing attempt needs attention. Retained data is still shown.</p>{% endif %}
+          {% if health.historical_diagnostics_count %}<p>{{ health.historical_diagnostics_count|number }} retained source diagnostics (including historical runs). Missing or malformed data may affect coverage.</p>{% endif %}
+          {% for root in unavailable %}<p>Source {{ root.status }}: <code>{{ root.path }}</code>. Retained history has not been deleted.</p>{% endfor %}
+          <a href="{{ link('/data-health') }}">Review data health →</a>
+        </details>
+        {% endif %}
+        {% if page != 'health' %}
+        <details class="filter-panel" {% if q.start or q.project or q.model %}open{% endif %}>
+          <summary><span>Filter usage</span><span class="filter-summary">{% if q.start %}{{ q.start }} — {{ q.end }}{% else %}All retained dates{% endif %} · {{ q.tz }}{% if q.project %} · Project selected{% endif %}{% if q.model %} · {{ q.model }}{% endif %}</span></summary>
+          <form class="filters" method="get" aria-label="Report filters">
+            <label>From<input type="date" name="from" value="{{ q.start or '' }}"></label>
+            <label>Through<input type="date" name="to" value="{{ q.end or '' }}"></label>
+            <label>Timezone<input name="tz" value="{{ q.tz }}" required maxlength="100"></label>
+            <label>Project<input name="project" value="{{ q.project or '' }}" list="projects" placeholder="All projects" maxlength="1024"></label>
+            <label>Model<input name="model" value="{{ q.model or '' }}" list="models" placeholder="All models" maxlength="200"></label>
+            <input type="hidden" name="limit" value="{{ q.limit }}"><button type="submit">Apply filters</button><a class="reset" href="{{ request.url.path }}">Reset</a>
+            <datalist id="projects">{% for project in projects %}<option value="{{ project.project_id }}">{{ project.display_name }}</option>{% endfor %}</datalist>
+            <datalist id="models">{% for model in models %}<option value="{{ model }}"></option>{% endfor %}</datalist>
+          </form>
+          <p class="filter-note">Both dates are inclusive. Project and model filters use exact IDs. Values include only matching requests.</p>
+        </details>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+      <footer><span>Claude Dashboard <span aria-hidden="true">·</span> Local usage ledger</span><span>No prompts, responses or tool content stored. Local paths may still be sensitive.</span></footer>
+    </div>
+  </div>
+</body>
+</html>

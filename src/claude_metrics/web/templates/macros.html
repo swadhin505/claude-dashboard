@@ -1,0 +1,31 @@
+{% macro cost(a) -%}
+<div class="cost-value">{% if a.cost_status == 'UNPRICED' %}Unpriced{% else %}{{ a.known_cost_nanos|money_brief }}{% if a.cost_status == 'PARTIAL' %}<small> known portion</small>{% endif %}{% endif %}</div>
+<div class="badges">{% if a.cost_status != 'COMPLETE' %}<span class="badge {{ a.cost_status|lower }}">{{ a.cost_status|lower }}</span>{% endif %}{% if a.estimated_requests %}<span class="badge estimated">{{ a.estimated_requests|number }} estimated</span>{% endif %}</div>
+<details class="cost-detail"><summary>Exact value &amp; coverage</summary>
+  {% if a.cost_status != 'UNPRICED' %}<p class="exact-amount">{{ a.known_cost_nanos|money }}{% if a.cost_status == 'PARTIAL' %} · known portion{% endif %}</p>{% endif %}
+  <small>{{ a.complete_requests|number }}/{{ a.requests|number }} requests fully covered{% if a.partial_requests %} · {{ a.partial_requests|number }} partial{% endif %}{% if a.unpriced_requests %} · {{ a.unpriced_requests|number }} unpriced{% endif %}</small>
+  <small>Complete coverage refers to captured usage, not an invoice.</small>
+</details>
+{% if a.unpriced_tokens or a.unknown_counters or a.unpriced_units %}<small class="coverage">{{ a.unpriced_tokens|number }} known tokens without rates{% if a.unknown_counters %} · unknown counters{% endif %}{% if a.unpriced_units %} · missing unit rates: {% for unit, qty in a.unpriced_units.items() %}{{ unit }} ({{ qty|number }}){% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</small>{% endif %}
+{%- endmacro %}
+
+{% macro metrics(a) %}
+<section class="metrics" aria-label="Selected usage totals">
+  <article class="metric cost-metric"><h2>API-equivalent cost <span aria-hidden="true">$</span></h2>{{ cost(a) }}<small>{{ a.reported_complete_requests|number }} reported request costs · remainder calculated or unavailable</small></article>
+  <article class="metric"><h2>{% if a.all_tokens is none %}Known tokens{% else %}Total tokens{% endif %}<span aria-hidden="true">↗</span></h2><div class="big-number">{{ a.known_tokens|number }}</div><small>Input, cache and output combined{% if a.all_tokens is none %}<br>Incomplete: {{ a.incomplete_token_requests|number }} requests have unknown counters{% endif %}</small></article>
+  <article class="metric"><h2>Requests <span aria-hidden="true">↔</span></h2><div class="big-number">{{ a.requests|number }}</div><small>Deduplicated model calls</small></article>
+  <article class="metric"><h2>Sessions <span aria-hidden="true">▤</span></h2><div class="big-number">{{ a.sessions|number }}</div><small>With matching requests</small></article>
+</section>
+{% if a.warnings %}<details class="notice"><summary>Coverage notes for this selection</summary><ul>{% for reason, count in a.warnings.items() %}<li>{{ reason }}: {{ count|number }} requests</li>{% endfor %}</ul></details>{% endif %}
+{% endmacro %}
+
+{% macro pagination(data, q, path, link, offset=false) %}
+{% if q.cursor or data.next_cursor is not none %}<nav class="pagination" aria-label="Pagination"><span>Up to {{ q.limit }} rows per list</span><a href="{{ link(path) }}">First page</a>{% if offset and q.cursor %}<a class="button" href="{{ link(path, cursor=[0,q.cursor-q.limit]|max) }}">← Previous</a>{% endif %}{% if data.next_cursor is not none %}<a class="button" href="{{ link(path, cursor=data.next_cursor) }}">Next page →</a>{% endif %}</nav>{% endif %}
+{% endmacro %}
+
+{% macro breakdown(rows, label, link, dimension) %}
+<section class="panel"><div class="panel-heading"><div><h2>By {{ label }}</h2><p>Where your selected usage goes</p></div><span class="badge">{{ rows|length }} shown</span></div>
+{% if rows %}<div class="table-wrap"><table><thead><tr><th scope="col">{{ label|capitalize }}</th><th scope="col">Usage</th><th scope="col">API-equivalent cost</th></tr></thead><tbody>
+{% for row in rows %}<tr><td><a class="row-link" href="{{ link('/', **{dimension:row.key}) }}">{{ row.label or row.key }}</a></td><td><strong>{{ row.known_tokens|number }}</strong><small>{% if row.all_tokens is none %}known {% endif %}tokens · {{ row.requests|number }} calls</small></td><td>{{ cost(row) }}</td></tr>{% endfor %}
+</tbody></table></div>{% else %}<p class="empty">No rows on this page.</p>{% endif %}</section>
+{% endmacro %}

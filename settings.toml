@@ -1,0 +1,25 @@
+# Edit application paths here; no Python changes are needed.
+# Automatically loaded when commands run from this directory.
+# From another directory, pass --config /path/to/claude-dashboard/settings.toml.
+# Restart a running dashboard after editing. CLI flags and CLAUDE_METRICS_*
+# environment variables override these values.
+
+[app]
+# Relative paths are based on THIS file, not the terminal's current directory.
+# Keep .local to use the existing development ledger; changing it does not move data.
+data_dir = ".local"
+
+# Claude projects ROOTS, not individual project folders. ~ means your home folder.
+# Add backup/custom projects roots to this list. A missing root is only a warning.
+source_dirs = [
+    "~/.claude/projects",
+    "~/.config/claude/projects",
+]
+# To use CLAUDE_CONFIG_DIR / XDG_CONFIG_HOME discovery instead, remove source_dirs.
+
+timezone = "Asia/Kolkata"
+# Remove timezone to detect the system timezone automatically.
+
+# These are the supported TOML settings. Pricing mode and port remain CLI options:
+# --cost-mode auto (default) or strict; --port 8765 (default).
+# Source adapters and pricing implementations are wired separately in runtime.py.

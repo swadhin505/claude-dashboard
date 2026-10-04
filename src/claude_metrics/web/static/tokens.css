@@ -1,0 +1,71 @@
+:root {
+  --color-paper: oklch(98.5% 0.006 252);
+  --color-paper-2: oklch(97% 0.008 252);
+  --color-paper-3: oklch(94.5% 0.012 252);
+  --color-surface: oklch(99.5% 0.004 252);
+  --color-rule: oklch(88% 0.014 252);
+  --color-rule-2: oklch(76% 0.018 252);
+  --color-muted: oklch(47% 0.02 258);
+  --color-neutral: oklch(37% 0.022 258);
+  --color-ink-2: oklch(30% 0.024 258);
+  --color-ink: oklch(20% 0.025 258);
+  --color-accent: oklch(52% 0.2 256);
+  --color-accent-soft: oklch(94% 0.034 256);
+  --color-accent-ink: oklch(98.5% 0.006 252);
+  --color-focus: oklch(29% 0.13 256);
+  --color-graphite: oklch(23% 0.022 258);
+  --color-graphite-2: oklch(29% 0.024 258);
+  --color-graphite-ink: oklch(95% 0.01 252);
+  --color-success: oklch(39% 0.11 157);
+  --color-success-soft: oklch(95% 0.025 157);
+  --color-warning: oklch(43% 0.1 76);
+  --color-warning-soft: oklch(96% 0.028 76);
+  --color-error: oklch(46% 0.17 28);
+  --color-error-soft: oklch(96% 0.026 28);
+
+  --font-display: "Bahnschrift", "Aptos Display", "Segoe UI Variable Display", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Aptos", "Segoe UI Variable Text", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "SFMono-Regular", "Liberation Mono", ui-monospace, monospace;
+
+  --text-xs: 0.75rem;
+  --text-2xs: 0.6875rem;
+  --text-code: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.75rem;
+  --text-2xl: clamp(2rem, 4vw, 2.75rem);
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+
+  --rule-hair: 1px;
+  --rule-fine: 2px;
+  --rule-accent: 0.25rem;
+  --radius-card: 0.625rem;
+  --radius-input: 0.375rem;
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+
+  --shadow-card: 0 1px 2px oklch(20% 0.025 258 / 0.05);
+  --z-base: 1;
+  --z-raised: 10;
+  --z-sticky: 200;
+
+  --layout-sidebar: 15rem;
+  --measure-prose: 65ch;
+}

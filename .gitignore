@@ -1,0 +1,15 @@
+.venv/
+.tools/
+.uv-cache/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.local/
+.backups/
+.support/
+.restored/
+*.sqlite3*

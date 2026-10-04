@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% from 'macros.html' import cost, pagination %}
+{% block title %}Sessions{% endblock %}
+{% block subtitle %}Trace retained usage from project sessions to request-level evidence.{% endblock %}
+{% block content %}
+<section class="panel"><div class="panel-heading"><div><h2>Retained sessions</h2><p>Stable ledger order · dates in {{ q.tz }}</p></div><span class="badge">{{ data['items']|length }} shown</span></div>
+{% if data['items'] %}
+<div class="table-wrap"><table class="sessions-table"><thead><tr><th scope="col">Session / project</th><th scope="col">Selected interval</th><th scope="col">Usage</th><th scope="col">API-equivalent cost</th></tr></thead><tbody>
+{% for row in data['items'] %}
+<tr><td><a class="session-link" href="{{ link('/sessions/' ~ row.session_pk) }}">{{ row.project_name or 'Unknown project' }} <span aria-hidden="true">↗</span></a><small class="mono">{{ row.session_id }}</small><small>{{ row.models|join(', ') }}</small></td>
+<td class="date-cell">{{ row.first_selected_request_us|timestamp(q.tz) }}<small>to {{ row.last_selected_request_us|timestamp(q.tz) }}</small></td>
+<td><strong>{{ row.known_tokens|number }}</strong><small>{% if row.all_tokens is none %}known {% endif %}tokens · {{ row.requests|number }} calls</small><details class="cost-detail"><summary>Attribution</summary>{% for source, group in row.sources.items() %}<small>{{ source }}: {{ group.requests|number }} calls · {{ group.known_tokens|number }} known tokens</small>{% endfor %}</details></td>
+<td>{{ cost(row) }}</td></tr>
+{% endfor %}
+</tbody></table></div>
+{% else %}<div class="empty"><span class="empty-symbol" aria-hidden="true">▤</span><h2>No sessions on this page</h2><p>Try the first page, clear your filters, or refresh your sources.</p><a href="{{ link('/sessions') }}">First page →</a></div>{% endif %}
+</section>
+{{ pagination(data, q, '/sessions', link) }}
+{% endblock %}
