@@ -12,7 +12,7 @@ from claude_metrics.cli import main
 def test_init_then_doctor_and_repeat_init(tmp_path, capsys):
     assert main(["init", "--json"]) == 0
     created = json.loads(capsys.readouterr().out)
-    assert created["schema_version"] == 3
+    assert created["schema_version"] == 4
     assert Path(created["database"]).is_relative_to(tmp_path)
     assert main(["init", "--json"]) == 0
     capsys.readouterr()

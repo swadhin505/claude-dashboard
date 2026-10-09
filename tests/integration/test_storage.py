@@ -1,3 +1,4 @@
+import hashlib
 import sqlite3
 
 import pytest
@@ -15,10 +16,10 @@ from claude_metrics.storage import (
 def test_migrations_are_idempotent_and_durable(tmp_path):
     path = tmp_path / "nested/ledger.sqlite3"
     with connect(path) as conn:
-        assert migrate(conn) == 3
+        assert migrate(conn) == 4
         conn.execute("INSERT INTO sessions(agent_type, session_id) VALUES ('claude', 's1')")
         before = tuple(conn.execute("SELECT * FROM schema_migrations").fetchone())
-        assert migrate(conn) == 3
+        assert migrate(conn) == 4
         assert tuple(conn.execute("SELECT * FROM schema_migrations").fetchone()) == before
         assert inspect_database(conn)["ok"]
     with connect(path, readonly=True) as conn:
@@ -55,11 +56,11 @@ def test_failed_migration_rolls_back_schema_and_history(tmp_path):
     with connect(tmp_path / "db.sqlite3") as conn:
         migrate(conn)
         bad = Migration(
-            4, "004_bad.sql", "CREATE TABLE should_rollback(x INTEGER);\nINVALID SQL;\n"
+            5, "005_bad.sql", "CREATE TABLE should_rollback(x INTEGER);\nINVALID SQL;\n"
         )
         with pytest.raises(sqlite3.OperationalError):
             migrate(conn, (*bundled_migrations(), bad))
-        assert conn.execute("SELECT count(*) FROM schema_migrations").fetchone()[0] == 3
+        assert conn.execute("SELECT count(*) FROM schema_migrations").fetchone()[0] == 4
         assert not conn.execute(
             "SELECT name FROM sqlite_master WHERE name='should_rollback'"
         ).fetchall()
@@ -77,6 +78,37 @@ def test_changed_or_newer_migrations_are_rejected(tmp_path):
             )
         with pytest.raises(MigrationError, match="newer"):
             migrate(conn, [])
+
+
+def test_project_identity_migration_merges_windows_path_case(tmp_path):
+    with connect(tmp_path / "db.sqlite3") as conn:
+        migrations = bundled_migrations()
+        migrate(conn, migrations[:3])
+        roots = (
+            "C:/Users/Example/Projects/Learn",
+            "c:/Users/Example/Projects/Learn",
+        )
+        old_ids = [hashlib.sha256(("claude:" + root).encode()).hexdigest() for root in roots]
+        conn.executemany(
+            "INSERT INTO projects(project_id,agent_type,canonical_root,display_name) "
+            "VALUES (?, 'claude', ?, 'Learn')",
+            zip(old_ids, roots, strict=True),
+        )
+        conn.executemany(
+            "INSERT INTO sessions(agent_type,session_id,project_id) VALUES ('claude',?,?)",
+            (("one", old_ids[0]), ("two", old_ids[1])),
+        )
+
+        assert migrate(conn) == 4
+        projects = conn.execute(
+            "SELECT project_id,canonical_root,display_name FROM projects"
+        ).fetchall()
+        assert len(projects) == 1
+        assert projects[0]["canonical_root"] == "c:/users/example/projects/learn"
+        assert projects[0]["display_name"] == "Learn"
+        assert {row[0] for row in conn.execute("SELECT project_id FROM sessions")} == {
+            projects[0]["project_id"]
+        }
 
 
 def test_request_identity_is_scoped_and_counters_nullable(tmp_path):

@@ -35,7 +35,7 @@ packages = ["src/claude_metrics"]
 "data/pricing" = "claude_metrics/data/pricing"
 
 [tool.hatch.build.targets.sdist]
-include = ["src", "data", "tests", "docs", "scripts", "README.md", "settings.toml", "pyproject.toml", "uv.lock", ".python-version"]
+include = ["src", "data", "tests", "docs", "scripts", "README.md", "settings.toml", "pyproject.toml", "uv.lock", ".python-version", ".gitattributes"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

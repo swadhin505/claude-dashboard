@@ -20,9 +20,10 @@ from claude_metrics.domain import (
     Turn,
     counter,
 )
+from claude_metrics.project_paths import canonical_project_root
 from claude_metrics.units import utc_microseconds
 
-PARSER_VERSION = "claude-jsonl/2"
+PARSER_VERSION = "claude-jsonl/3"
 
 
 def text(value: object) -> str | None:
@@ -104,13 +105,14 @@ class ClaudeAdapter:
         project_id = None
         if cwd:
             # Source paths may come from another OS; don't resolve them on the host OS.
-            root = cwd.replace("\\", "/").rstrip("/") or "/"
+            display_root = cwd.replace("\\", "/").rstrip("/") or "/"
+            root = canonical_project_root(cwd)
             project_id = hashlib.sha256(("claude:" + root).encode()).hexdigest()
             yield Project(
                 agent_type="claude",
                 project_id=project_id,
                 canonical_root=root,
-                display_name=PurePosixPath(root).name or root,
+                display_name=PurePosixPath(display_root).name or display_root,
             )
         yield Session(
             agent_type="claude",

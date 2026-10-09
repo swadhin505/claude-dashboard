@@ -409,7 +409,7 @@ def test_upgrade_failure_rolls_back_data_and_preserves_receipts(settings):
     before = snapshots(settings)
     with connect(settings.database) as conn:
         failure = Migration(
-            4, "004_failure.sql", "UPDATE requests SET output_tokens=999;\nINVALID;\n"
+            5, "005_failure.sql", "UPDATE requests SET output_tokens=999;\nINVALID;\n"
         )
         with pytest.raises(sqlite3.OperationalError):
             migrate(conn, (*bundled_migrations(), failure))

@@ -104,8 +104,9 @@ totals, pages/assets, host-security and receipt-replay checks. Temporary package
 builds and synthetic ledgers were removed.
 
 - Existing commands, URLs, JSON report shapes and pricing defaults are preserved.
-- Schema 3, parser `claude-jsonl/2` and formula `claude-cost/2` are unchanged; v1 replay
-  remains supported. No personal data was scanned, repriced or migrated for this work.
+- Schema 4, parser `claude-jsonl/3` and formula `claude-cost/2` are current; v1 replay
+  remains supported. Migration 4 only canonicalizes project identity and repoints sessions;
+  it does not alter request or receipt facts.
 - `calculator.PricingPolicy`, `calculator.AUTO_POLICY`, `calculator.canonical`,
   `ledger.TOKEN_COLUMNS` and `web.service.refresh` remain compatible imports.
 - Calculation, report and Claude parsing function syntax trees match their originals.

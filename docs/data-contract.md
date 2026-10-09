@@ -1,8 +1,8 @@
 # Data contract, version 3
 
 This document describes the ingestion, pricing and reporting boundary implemented
-in Phase 3 and reused by the Phase 4 dashboard. Phase 5 retains schema 3 and parser
-`claude-jsonl/2`, introduces formula `claude-cost/2` with v1 replay, and freezes adapter
+in Phase 3 and reused by the Phase 4 dashboard. The current ledger uses schema 4 and parser
+`claude-jsonl/3`, introduces formula `claude-cost/2` with v1 replay, and freezes adapter
 contract `usage-adapter/1`. See [HTTP semantics](phase-4.md) and [operations](phase-5.md).
 
 ## Adapter boundary, usage-adapter/1

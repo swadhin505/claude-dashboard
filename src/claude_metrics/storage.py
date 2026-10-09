@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from importlib.resources import files
 from pathlib import Path
 
+from claude_metrics.project_paths import canonical_project_root
+
 
 class MigrationError(ValueError):
     pass
@@ -71,6 +73,15 @@ def migrate(conn: sqlite3.Connection, migrations: Sequence[Migration] | None = N
         raise MigrationError("migration versions must be contiguous from 1")
     if conn.in_transaction:
         raise MigrationError("migrations need their own transaction")
+    conn.create_function(
+        "sha256_hex",
+        1,
+        lambda value: hashlib.sha256(value.encode("utf-8")).hexdigest(),
+        deterministic=True,
+    )
+    conn.create_function(
+        "canonical_project_root", 1, canonical_project_root, deterministic=True
+    )
     conn.execute("BEGIN IMMEDIATE")
     try:
         conn.execute("""CREATE TABLE IF NOT EXISTS schema_migrations (
