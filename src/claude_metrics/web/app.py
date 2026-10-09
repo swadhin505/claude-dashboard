@@ -25,6 +25,7 @@ from claude_metrics.pricing.policy import PricingPolicy, default_policy
 from claude_metrics.runtime import Runtime, default_runtime
 from claude_metrics.storage import connect
 from claude_metrics.web import schemas
+from claude_metrics.web.conversations import register_conversations
 from claude_metrics.web.presentation import (
     TOKEN_LABELS,
     bars,
@@ -249,4 +250,12 @@ def create_app(
     def health_page(request: Request):
         return page(request, "health")
 
+    register_conversations(
+        app,
+        settings=settings,
+        templates=templates,
+        snapshot=snapshot,
+        health_data=health_data,
+        token=token,
+    )
     return app

@@ -6,7 +6,7 @@
 {% if data['items'] %}
 <div class="table-wrap"><table class="sessions-table"><thead><tr><th scope="col">Session / project</th><th scope="col">Selected interval</th><th scope="col">Usage</th><th scope="col">API-equivalent cost</th></tr></thead><tbody>
 {% for row in data['items'] %}
-<tr><td><a class="session-link" href="{{ link('/sessions/' ~ row.session_pk) }}">{{ row.project_name or 'Unknown project' }} <span aria-hidden="true">↗</span></a><small class="mono">{{ row.session_id }}</small><small>{{ row.models|join(', ') }}</small></td>
+<tr><td><a class="session-link" href="{{ link('/sessions/' ~ row.session_pk) }}">{{ row.project_name or 'Unknown project' }} <span aria-hidden="true">↗</span></a><small class="mono">{{ row.session_id }}</small><small>{{ row.models|join(', ') }}</small><a class="button" href="/sessions/{{ row.session_pk }}/conversation">Open conversation</a></td>
 <td class="date-cell">{{ row.first_selected_request_us|timestamp(q.tz) }}<small>to {{ row.last_selected_request_us|timestamp(q.tz) }}</small></td>
 <td><strong>{{ row.known_tokens|number }}</strong><small>{% if row.all_tokens is none %}known {% endif %}tokens · {{ row.requests|number }} calls</small><details class="cost-detail"><summary>Attribution</summary>{% for source, group in row.sources.items() %}<small>{{ source }}: {{ group.requests|number }} calls · {{ group.known_tokens|number }} known tokens</small>{% endfor %}</details></td>
 <td>{{ cost(row) }}</td></tr>

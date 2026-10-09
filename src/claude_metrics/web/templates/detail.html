@@ -1,8 +1,10 @@
 {% extends 'base.html' %}{% from 'macros.html' import metrics, pagination %}
 {% block title %}Session detail{% endblock %}
 {% block subtitle %}Audit request-level usage and pricing without conversation content.{% endblock %}
+{% block assets %}<link rel="stylesheet" href="/static/conversation.css">{% endblock %}
 {% block content %}
 <p class="breadcrumb"><a href="{{ link('/sessions') }}">← All sessions</a> · Ledger session #{{ data.session_pk }}</p>
+<nav class="session-views" aria-label="Session views"><a href="/sessions/{{ data.session_pk }}/conversation">Conversation</a><a href="{{ link('/sessions/' ~ data.session_pk) }}" aria-current="page">Usage &amp; receipts</a></nav>
 {{ metrics(data.total) }}
 <section class="panel">
   <div class="panel-heading"><div><h2>Turn / request timeline</h2><p>Stable ledger order · timestamps in {{ q.tz }}</p></div></div>

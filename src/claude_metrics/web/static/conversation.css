@@ -1,0 +1,44 @@
+/* Conversation-only presentation; shares the workbench tokens and native disclosures. */
+.session-views { display: flex; flex-wrap: wrap; gap: var(--space-md); border-bottom: 1px solid var(--color-rule); margin-bottom: var(--space-md); }
+.session-views a { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-xs) 0; color: var(--color-muted); text-decoration: none; border-bottom: 2px solid transparent; }
+.session-views a[aria-current] { color: var(--color-accent); border-bottom-color: var(--color-accent); font-weight: 650; }
+.transcript-overview .panel-heading { align-items: start; }
+.transcript-overview .panel-heading p { overflow-wrap: anywhere; }
+.transcript-context { min-width: 0; }
+.transcript-context > p { display: flex; gap: var(--space-sm); overflow-wrap: anywhere; }
+.transcript-context > p > span { min-width: 4rem; color: var(--color-muted); }
+.transcript-note { font-size: var(--text-sm); color: var(--color-muted); overflow-wrap: anywhere; }
+.transcript-sources { margin-block: var(--space-sm); }
+.transcript-sources summary, .transcript-disclosure summary, .transcript-evidence summary { min-height: 44px; padding-block: var(--space-xs); cursor: pointer; }
+.transcript-sources nav { display: grid; gap: var(--space-2xs); max-height: 20rem; overflow: auto; }
+.transcript-sources a { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-xs); min-height: 44px; padding: var(--space-xs); overflow-wrap: anywhere; }
+.transcript-sources a[aria-current] { background: var(--color-accent-soft); }
+.transcript-toolbar, .transcript-actions, .transcript-pagination { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-xs); }
+.transcript-toolbar { justify-content: space-between; margin-block: var(--space-md); }
+.transcript-toolbar p { margin: 0; color: var(--color-muted); }
+.transcript { min-width: 0; border: 1px solid var(--color-rule); background: var(--color-surface); }
+.transcript-message { padding: var(--space-md); border-left: 3px solid transparent; min-width: 0; scroll-margin-top: var(--space-lg); }
+.transcript-message + .transcript-message { border-top: 1px solid var(--color-rule); }
+.transcript-message.role-user { border-left-color: var(--color-accent); background: var(--color-paper-2); }
+.transcript-message.role-summary, .transcript-message.role-context { background: var(--color-paper); }
+.transcript-message-heading, .transcript-message-heading > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-xs); min-width: 0; }
+.transcript-message-heading { justify-content: space-between; }
+.transcript-message-heading h2 { margin: 0; font-size: var(--text-base); }
+.transcript-message-heading a { min-height: 44px; display: inline-flex; align-items: center; font-size: var(--text-xs); color: var(--color-muted); }
+.transcript-message-heading .mono { font-size: var(--text-xs); color: var(--color-muted); overflow-wrap: anywhere; }
+.transcript-time { margin-bottom: var(--space-sm); }
+.transcript-prose { padding: 0; border: 0; background: transparent; color: var(--color-ink); font: inherit; white-space: pre-wrap; max-height: 36rem; }
+.transcript-tool { margin-block: var(--space-xs); border: 1px solid var(--color-rule); border-radius: var(--radius-input); min-width: 0; }
+.transcript-tool > summary { cursor: pointer; min-height: 44px; padding: var(--space-xs) var(--space-sm); background: var(--color-paper-2); overflow-wrap: anywhere; }
+.tool-name { font-family: var(--font-mono); font-weight: 650; }
+.tool-preview { margin-inline: var(--space-xs); font-size: var(--text-xs); color: var(--color-muted); }
+.tool-body { border-top: 1px solid var(--color-rule); padding: var(--space-sm); min-width: 0; }
+.tool-body h3 { font-size: var(--text-sm); margin: var(--space-sm) 0 var(--space-2xs); }
+.tool-body pre { margin-top: var(--space-2xs); }
+.tool-body > small { overflow-wrap: anywhere; }
+.transcript-disclosure, .transcript-evidence { font-size: var(--text-sm); color: var(--color-muted); }
+.transcript-evidence dl { display: grid; grid-template-columns: minmax(6rem, auto) minmax(0, 1fr); gap: var(--space-2xs) var(--space-sm); font: var(--text-xs) var(--font-mono); }
+.transcript-evidence dd { margin: 0; overflow-wrap: anywhere; }
+.transcript-pagination { justify-content: flex-end; margin-block: var(--space-md); }
+@media (min-width: 90rem) { .transcript, .transcript-overview, .transcript-toolbar, .transcript-pagination { max-width: 90rem; } }
+@media (max-width: 60rem) { .transcript-message { padding: var(--space-sm); } }

@@ -64,7 +64,8 @@ new records; use `scan --full` to reparse available files without deleting retai
 history. An unfinished last line waits for a newline on the next scan.
 
 The dashboard is local-only, with packaged templates/styles/scripts and no CDN.
-All token/cost logic stays in Python; JavaScript only submits a refresh and shows its status.
+All token/cost logic stays in Python; JavaScript handles refresh status and optional
+expand/collapse controls, not accounting or transcript parsing.
 The refreshed UI uses compact navigation, clearer cards/tables, and expandable
 filters/evidence. Headline costs are rounded to cents; expand **Exact value & coverage**
 for full precision. Positive sub-cent amounts show **<$0.01**, not zero. See the
@@ -72,6 +73,18 @@ for full precision. Positive sub-cent amounts show **<$0.01**, not zero. See the
 Current token counts are not a bill, subscription utilization, or a claim of complete
 API coverage. Provider/auth evidence is not guessed from model names or today's login.
 No personal transcript was imported as part of the automated acceptance tests.
+
+### Session conversations
+
+Choose **Sessions → Open conversation** to read user prompts, assistant replies,
+recorded thinking and expandable tool inputs/results. **Usage & receipts** keeps
+the existing accounting view alongside it. Main and subagent source logs can be
+selected separately. Conversation content is read locally on demand from the
+original JSONL, never copied into the usage database. Missing originals leave
+usage history intact but cannot be reconstructed from the ledger.
+
+See [Conversation browsing](docs/conversations.md) for privacy, source-order
+semantics, pagination, read limits and the separate module/API boundaries.
 
 ## Pricing and reports
 

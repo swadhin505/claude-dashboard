@@ -39,6 +39,7 @@ def test_core_has_no_outer_layer_imports(module):
         "claude_metrics.application",
         "claude_metrics.runtime",
         "claude_metrics.storage",
+        "claude_metrics.transcripts",
     )
     imports = [node.module or "" for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
     imports += [

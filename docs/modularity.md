@@ -18,9 +18,12 @@ download, background watcher or UI change.
 | Calculation and historical formula replay | `pricing/calculator.py` through `pricing/base.py` | Receipt creation and verification |
 | Database initialization and scan/pricing refresh | `application.py` | CLI initialization, web startup and refresh |
 | Aggregation | `reports.py` | CLI reports, JSON endpoints and pages |
+| Transient conversation content, source safety and tool matching | `transcripts/` | Separate conversation routes in `web/conversations.py` |
 
 Changing the default implementation in `default_runtime()` takes effect after process
 restart. It does **not** reprice retained receipts or rewrite source evidence.
+The optional [conversation view](conversations.md) is Claude-specific and read-only;
+it is not another usage adapter and does not change the content-free ledger contract.
 For ordinary path/timezone changes, edit root `settings.toml`, not `runtime.py`.
 The shared loader reads `settings.toml` in the working directory automatically;
 `--config` selects a replacement file. CLI flags and dedicated environment variables

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Conversation{% endblock %}
+{% block subtitle %}Prompts, replies and tool activity from the original Claude Code log.{% endblock %}
+{% block assets %}
+<link rel="stylesheet" href="/static/conversation.css">
+<script src="/static/conversation.js" defer></script>
+{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="/sessions">← All sessions</a> · Ledger session #{{ data.session.session_pk }}</p>
+<nav class="session-views" aria-label="Session views"><a href="/sessions/{{ data.session.session_pk }}/conversation" aria-current="page">Conversation</a><a href="/sessions/{{ data.session.session_pk }}">Usage &amp; receipts</a></nav>
+<section class="panel transcript-overview" aria-labelledby="transcript-heading">
+  <div class="panel-heading"><div><h2 id="transcript-heading">Session transcript</h2><p class="mono">{{ data.session.session_id }}</p></div><span class="badge">Read-only · local file</span></div>
+  <div class="transcript-context">
+    {% if data.session.cwd %}<p><span>Project</span><code>{{ data.session.cwd }}</code></p>{% endif %}
+    {% if data.session.branch %}<p><span>Branch</span><code>{{ data.session.branch }}</code></p>{% endif %}
+    <p class="transcript-note">Live source order, including retries and branches. Usage filters do not apply here. Content may contain secrets; nothing is executed or copied into the ledger.</p>
+    {% if data.sources|length > 1 %}
+    <details class="transcript-sources"><summary>Choose a log · {{ data.sources|length }} linked sources</summary><nav aria-label="Transcript sources">{% for source in data.sources %}<a href="{{ conversation_link(file_id=source.file_id) }}" {% if source.file_id == data.file_id %}aria-current="page"{% endif %}><span class="badge">{{ source.kind }}</span><span>{{ source.name }}</span><small>Source #{{ source.file_id }}</small></a>{% endfor %}</nav></details>
+    {% endif %}
+    {% if data.source_name %}<small class="mono">{{ data.source_name }} · {{ data.total_messages|number }} displayed messages in the bounded read</small>{% endif %}
+  </div>
+</section>
+{% if data.warnings %}<aside class="notice" aria-label="Transcript coverage"><strong>Partial or qualified transcript</strong><ul>{% for warning in data.warnings %}<li>{{ warning }}</li>{% endfor %}</ul></aside>{% endif %}
+{% if data.unavailable %}
+<section class="panel empty"><h2>Conversation unavailable</h2><p>{{ data.unavailable }}</p><p>Restore the original log under a configured source folder, then refresh. The usage ledger does not contain a backup of conversation content.</p><a href="/sessions/{{ data.session.session_pk }}">View retained usage &amp; receipts →</a></section>
+{% elif not data.messages %}
+<section class="panel empty"><h2>No displayable messages</h2><p>No matching conversation content was found in this source. Try another linked log or refresh after Claude writes more records.</p></section>
+{% else %}
+<div class="transcript-toolbar"><p>{{ data.total_messages|number }} messages · Page {{ data.page }} of {{ data.pages }}</p><div class="transcript-actions" hidden><button type="button" data-disclosures="open">Expand tools</button><button type="button" data-disclosures="close">Collapse tools</button></div></div>
+<div class="transcript" aria-label="Conversation messages">
+{% for message in data.messages %}
+<article class="transcript-message role-{{ message.role }}" id="message-{{ message.line }}">
+  <header class="transcript-message-heading"><div><h2>{% if message.role == 'user' %}You{% elif message.role == 'assistant' %}Claude{% elif message.role == 'tool' %}Unmatched tool result{% elif message.role == 'summary' %}Context summary{% elif message.role == 'context' %}Injected context{% else %}System{% endif %}</h2>{% if message.model %}<span class="mono">{{ message.model }}</span>{% endif %}{% if message.stream != 'main' %}<span class="badge">{{ message.stream }}</span>{% endif %}</div><a href="#message-{{ message.line }}">Line {{ message.line }}{% if message.last_line != message.line %}–{{ message.last_line }}{% endif %}</a></header>
+  <small class="transcript-time">{{ message.timestamp or 'Timestamp not recorded' }}</small>
+  {% for block in message.blocks %}
+    {% if block.kind == 'text' %}
+      {% if message.role in ['context', 'summary', 'system'] %}<details class="transcript-disclosure"><summary>Recorded context</summary><pre>{{ block.text }}</pre></details>{% else %}<pre class="transcript-prose">{{ block.text }}</pre>{% endif %}
+    {% elif block.kind == 'thinking' %}
+      <details class="transcript-disclosure"><summary>Recorded thinking</summary><pre>{{ block.text }}</pre></details>
+    {% elif block.kind in ['tool_use', 'tool_result'] %}
+      <details class="transcript-tool"><summary><span class="tool-name">{{ block.name or 'Tool result' }}</span><span class="tool-preview">{% if block.kind == 'tool_use' %}Input{% if block.results %} + {{ block.results|length }} result{% if block.results|length != 1 %}s{% endif %}{% else %} · no matched result{% endif %}{% else %}No unambiguous call found{% endif %}</span>{% if block.results|selectattr('status', 'equalto', 'error')|list %}<span class="badge unpriced">Error recorded</span>{% endif %}</summary>
+        <div class="tool-body"><small class="mono">Call ID: {{ block.tool_id or 'Not recorded' }}</small>
+          {% if block.kind == 'tool_use' %}<h3>Input</h3><pre>{{ block.text }}</pre>{% endif %}
+          {% for output in block.results %}<div class="tool-output"><h3>Output <span class="badge">{{ output.status }}</span></h3><small>Line {{ output.line }} · {{ output.timestamp or 'Timestamp not recorded' }}</small><pre>{{ output.text }}</pre></div>{% else %}<p class="transcript-note">No matched output in this read. This does not imply the tool is running or succeeded.</p>{% endfor %}
+        </div>
+      </details>
+    {% else %}<p class="transcript-note">{{ block.text }}</p>{% endif %}
+  {% endfor %}
+  <details class="transcript-evidence"><summary>Message identifiers</summary><dl><dt>UUID</dt><dd>{{ message.uuid or 'Not recorded' }}</dd><dt>Parent UUID</dt><dd>{{ message.parent_uuid or 'Not recorded' }}</dd><dt>Message ID</dt><dd>{{ message.message_id or 'Not recorded' }}</dd><dt>Request ID</dt><dd>{{ message.request_id or 'Not recorded' }}</dd></dl></details>
+</article>
+{% endfor %}
+</div>
+<nav class="transcript-pagination" aria-label="Conversation pages">{% if data.page > 1 %}<a class="button" href="{{ conversation_link(page=data.page - 1) }}">← Previous</a>{% endif %}<span>Page {{ data.page }} of {{ data.pages }}</span>{% if data.page < data.pages %}<a class="button" href="{{ conversation_link(page=data.page + 1) }}">Next →</a><a class="button" href="{{ conversation_link(page=data.pages) }}">Latest page</a>{% endif %}</nav>
+{% endif %}
+<p class="transcript-note">Text is shown as recorded, not rendered as HTML or Markdown. Images and binary attachments are omitted. References to external tool-output files are not opened.</p>
+{% endblock %}

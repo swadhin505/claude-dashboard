@@ -38,6 +38,11 @@ It must not persist `SourceRecord.payload`. `SourceRef` uses a 1-based line,
 0-based **byte** offset, file generation, and parser version. Observation JSON
 must be serialized from the normalized allowlist, never copied from raw JSON.
 
+The separate [conversation browser](conversations.md) may read original,
+session-linked JSONL on demand into transient display types. Those types never
+enter this adapter, ledger, pricing or support-export contract. Browsing adds no
+schema migration and does not retain prompts, replies or tool inputs/results.
+
 The current request is a projection of retained observations. Full rescans must
 not add a new observation for the same file generation, offset, and parser version.
 Copied/resumed source occurrences need explicit lineage plus matching request

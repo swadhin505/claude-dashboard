@@ -37,15 +37,17 @@ claude-dashboard/
     ingestion/                checkpoints, deduplication/projection and writer locking
     pricing/                  contracts/policy, catalogs, calculation and receipts
     migrations/               immutable, numbered SQL migrations
+    transcripts/              transient content reader/parser and session-linked page service
     web/
       app.py                  app lifecycle, routes and template context assembly
+      conversations.py        separate conversation HTML/JSON route orchestration
       security.py             local host, origin, scan-token and response-header checks
       queries.py              HTTP query validation and grouped-list pagination
       schemas.py              HTTP request/response contracts
       service.py              compatibility import for application.refresh
       presentation.py         formatting and chart geometry, not accounting
       templates/              Jinja pages and shared layout/macros
-      static/                 local stylesheet and refresh-only JavaScript
+      static/                 local styles, refresh and optional disclosure controls
   tests/
     unit/                     individual contracts, helpers and argument parsing
     integration/              storage, ingestion, pricing, CLI, HTTP and recovery
@@ -78,6 +80,9 @@ The console entry point remains `claude_metrics.cli:main`. Both
 - **Accounting:** normalization, ingestion, pricing and reports remain separate.
   Money stays in integer nanodollars; unknown usage must not become a false zero.
   Pricing receipts retain frozen inputs, policy, rates and calculation evidence.
+- **Conversation browsing:** `transcripts/` reads original session-linked logs on
+  demand, outside the accounting pipeline. It never persists content or changes
+  receipts. See [Conversation browsing](conversations.md) for ownership and limits.
 - **Persistence:** use existing connection, migration and writer-lock helpers.
   Preserve the single-writer lock across dashboard scan/pricing and consistent
   read transactions across multi-query reports.

@@ -434,7 +434,10 @@ def test_redesigned_pages_keep_accessible_local_structure(settings, path):
         html = web.get(path).text
         elements = PageElements(html).elements
         assert sum(tag == "h1" for tag, _ in elements) == 1
-        assert sum(attrs.get("aria-current") == "page" for _, attrs in elements) == 1
+        # Session detail has two independent navigation sets: primary and session views.
+        assert sum(attrs.get("aria-current") == "page" for _, attrs in elements) == (
+            2 if path == "/sessions/1" else 1
+        )
         ids = [attrs["id"] for _, attrs in elements if "id" in attrs]
         assert len(ids) == len(set(ids))
         assert "main" in ids and "scan-status" in ids

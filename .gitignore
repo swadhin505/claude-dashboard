@@ -13,3 +13,6 @@ build/
 .support/
 .restored/
 *.sqlite3*
+
+# Reference checkout (if placed inside this repository).
+/agentsview/
